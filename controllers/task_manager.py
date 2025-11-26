@@ -11,41 +11,74 @@ class TaskManager:
         cursor.execute("""
             INSERT INTO tasks
                 (user_id, goal_id, name, description, deadline,
-                 priority, category, date_created)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                 priority, category, date_created, completed)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
         """, (user_id, goal_id, name, description, deadline,
               priority, category, date_created))
         self.conn.commit()
+        
+        # returns id rather than task object
         return cursor.lastrowid
 
     def get_tasks_for_user(self, user_id):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM tasks WHERE user_id = ?", user_id)
+        # FIX: Added comma to make it a tuple (user_id,)
+        cursor.execute("SELECT * FROM tasks WHERE user_id = ?", (user_id,))
         rows = cursor.fetchall()
-        return [Task(
-            row["task_id"], row["user_id"], row["goal_id"],
-            row["name"], row["description"], row["deadline"],
-            row["priority"], row["category"], row["completed"],
-            row["date_created"]
-        ) for row in rows]
+        
+        tasks = []
+        for row in rows:
+            # FIX: Use numeric indices instead of ["name"]
+            # FIX: Match the Task.__init__ signature (user_id is first)
+            # Row order assumed: 0:id, 1:user, 2:goal, 3:name, 4:desc, 5:deadline, 6:prio, 7:cat, 8:comp, 9:created, 10:completed_date
+            t = Task(
+                user_id=row[1],
+                goal_id=row[2],
+                name=row[3],
+                description=row[4],
+                deadline=row[5],
+                priority=row[6],
+                category=row[7],
+                completed=row[8],
+                date_created=row[9],
+                date_completed=row[10] if len(row) > 10 else None
+            )
+            t._task_id = row[0] # Manually set the ID
+            tasks.append(t)
+        return tasks
 
     def get_task_by_id(self, task_id):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM tasks WHERE task_id = ?", task_id)
+        # FIX: Added comma 
+        cursor.execute("SELECT * FROM tasks WHERE task_id = ?", (task_id,))
         row = cursor.fetchone()
+        
         if row:
-            task = Task(
-                row["task_id"], row["user_id"], row["goal_id"],
-                row["name"], row["description"], row["deadline"],
-                row["priority"], row["category"], row["completed"],
-                row["date_created"]
+            # FIX: Correct mapping
+            t = Task(
+                user_id=row[1],
+                goal_id=row[2],
+                name=row[3],
+                description=row[4],
+                deadline=row[5],
+                priority=row[6],
+                category=row[7],
+                completed=row[8],
+                date_created=row[9],
+                date_completed=row[10] if len(row) > 10 else None
             )
-            if row["date_completed"]:                       # TODO review
-                task.mark_complete(row["date_completed"])
-            return task
+            t._task_id = row[0]
+            return t
         return None
 
     def update_task(self, task):
+        # --- NEW SAFETY CHECK ---
+        # Make sure task.task.id is set before updating a new task
+        if task.task_id is None:
+            print("Error: Cannot update a task that has no ID.")
+            return
+        # ------------------------
+
         cursor = self.conn.cursor()
         cursor.execute("""
             UPDATE tasks SET
@@ -63,7 +96,7 @@ class TaskManager:
 
     def delete_task(self, task_id):
         cursor = self.conn.cursor()
-        cursor.execute("DELETE FROM tasks WHERE task_id = ?", task_id)
+        cursor.execute("DELETE FROM tasks WHERE task_id = ?", (task_id,))
         self.conn.commit()
 
     def mark_task_complete(self, task_id, date_completed):
@@ -76,8 +109,9 @@ class TaskManager:
         self.conn.commit()
 
         task = self.get_task_by_id(task_id)
-        history_manager = HistoryManager(self.db)
-        history_manager.log_task(task.user_id, task_id, date_completed)
+        if task:
+            history_manager = HistoryManager(self.db)
+            history_manager.log_task(task.user_id, task_id, date_completed)
 
     def mark_task_incomplete(self, task_id):
         cursor = self.conn.cursor()

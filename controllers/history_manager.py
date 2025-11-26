@@ -15,19 +15,32 @@ class HistoryManager:
 
     def get_history_for_user(self, user_id):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM history WHERE user_id = ?", user_id)
+        cursor.execute("SELECT * FROM history WHERE user_id = ?", (user_id,))
         rows = cursor.fetchall()
-        return [History(row["history_id"], row["user_id"],
-                             row["task_id"], row["date_completed"]) for row in rows]
+        
+        return [History(
+            history_id=row[0], 
+            user_id=row[1],
+            task_id=row[2], 
+            date_completed=row[3]
+        ) for row in rows]
 
     def get_history_for_task(self, task_id):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM history WHERE task_id = ?", task_id)
-        rows = cursor.fetchall()
-        return [History(row["history_id"], row["user_id"],
-                             row["task_id"], row["date_completed"]) for row in rows]
 
-    def delete_history_for_task(self, task_id):
+        cursor.execute("SELECT * FROM history WHERE task_id = ?", (task_id,))
+        rows = cursor.fetchall()
+        
+        return [History(
+            history_id=row[0], 
+            user_id=row[1],
+            task_id=row[2], 
+            date_completed=row[3]
+        ) for row in rows]
+
+    # FIX: Renamed this method to match what was called in TaskManager
+    def remove_task(self, task_id):
         cursor = self.conn.cursor()
-        cursor.execute("DELETE FROM history WHERE task_id = ?", task_id)
+
+        cursor.execute("DELETE FROM history WHERE task_id = ?", (task_id,))
         self.conn.commit()

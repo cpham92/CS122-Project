@@ -11,20 +11,33 @@ class GoalManager:
             VALUES (?, ?, ?)
         ''', (user_id, name, description))
         self.conn.commit()
+        
+        # Returning id rather than goal object
         return cursor.lastrowid
 
     def get_goals_for_user(self, user_id):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM goals WHERE user_id = ?", user_id)
+        cursor.execute("SELECT * FROM goals WHERE user_id = ?", (user_id,))
         rows = cursor.fetchall()
-        return [Goal(row["goal_id"], row["user_id"], row["name"], row["description"]) for row in rows]
+        
+        results = []
+        for row in rows:
+            # FIX: Use integer indices (0:id, 1:user_id, 2:name, 3:desc)
+            # FIX: Initialize safely and set ID manually
+            g = Goal(row[1], row[2], row[3])
+            g._goal_id = row[0]
+            results.append(g)
+        return results
 
     def get_goal_by_id(self, goal_id):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM goals WHERE goal_id = ?", goal_id)
+        cursor.execute("SELECT * FROM goals WHERE goal_id = ?", (goal_id,))
         row = cursor.fetchone()
+        
         if row:
-            return Goal(row["goal_id"], row["user_id"], row["name"], row["description"])
+            g = Goal(row[1], row[2], row[3])
+            g._goal_id = row[0]
+            return g
         return None
 
     def update_goal(self, goal):
