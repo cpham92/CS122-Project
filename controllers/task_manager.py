@@ -1,3 +1,4 @@
+from datetime import datetime
 from models.task import Task
 from controllers.history_manager import HistoryManager
 
@@ -13,7 +14,7 @@ class TaskManager:
                 (user_id, goal_id, name, description, deadline,
                  priority, category, date_created, completed)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
-        """, (user_id, goal_id, name, description, deadline,
+        """, (user_id, goal_id, name, description, deadline.strftime("%Y-%m-%d") if deadline else None,
               priority, category, date_created))
         self.conn.commit()
         
@@ -36,12 +37,12 @@ class TaskManager:
                 goal_id=row[2],
                 name=row[3],
                 description=row[4],
-                deadline=row[5],
+                deadline=self._parse_date(row[5]),
                 priority=row[6],
                 category=row[7],
                 completed=row[8],
-                date_created=row[9],
-                date_completed=row[10] if len(row) > 10 else None
+                date_created=self._parse_date(row[9]),
+                date_completed=self._parse_date(row[10]) if len(row) > 10 else None
             )
             t._task_id = row[0] # Manually set the ID
             tasks.append(t)
@@ -60,12 +61,12 @@ class TaskManager:
                 goal_id=row[2],
                 name=row[3],
                 description=row[4],
-                deadline=row[5],
+                deadline=self._parse_date(row[5]),
                 priority=row[6],
                 category=row[7],
                 completed=row[8],
-                date_created=row[9],
-                date_completed=row[10] if len(row) > 10 else None
+                date_created=self._parse_date(row[9]),
+                date_completed=self._parse_date(row[10]) if len(row) > 10 else None
             )
             t._task_id = row[0]
             return t
@@ -89,7 +90,7 @@ class TaskManager:
                 category = ?,
                 goal_id = ?
             WHERE task_id = ?
-        """, (task.name, task.description, task.deadline,
+        """, (task.name, task.description, task.deadline.strftime("%Y-%m-%d") if task.deadline else None,
               task.priority, task.category, task.goal_id,
               task.task_id))
         self.conn.commit()
@@ -124,3 +125,29 @@ class TaskManager:
 
         history_manager = HistoryManager(self.db)
         history_manager.remove_task(task_id)
+
+    def update_category(self, user_id, old_name, new_name):
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            UPDATE tasks
+            SET category = ?
+            WHERE user_id = ? AND category = ?
+        """, (new_name, user_id, old_name))
+        self.conn.commit()
+
+    def remove_category(self, user_id, category):
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            UPDATE tasks
+            SET category = NULL
+            WHERE user_id = ? AND category = ?
+        """, (user_id, category))
+        self.conn.commit()
+
+    def _parse_date(self, value):
+        if value is None or value == "":
+            return None
+        try:
+            return datetime.strptime(value, "%Y-%m-%d")
+        except ValueError:
+            return None

@@ -1,4 +1,5 @@
 from datetime import datetime
+from collections import Counter
 from abc import ABC, abstractmethod  # <--- ADDED THIS
 
 class History:

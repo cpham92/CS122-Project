@@ -32,7 +32,7 @@ class User:
 
     def verify_password(self, entered_password):
         hashed_entered_password = hashlib.sha256(entered_password.encode('utf-8')).hexdigest()
-        return hashed_entered_password == hashed_entered_password
+        return hashed_entered_password == self._password
 
 if __name__ == '__main__':
     # Example Usage and Testing

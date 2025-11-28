@@ -43,6 +43,12 @@ class UserManager:
             return self._row_to_user(row)
         return None
 
+    def get_all_usernames(self):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT username FROM users")
+        rows = cursor.fetchall()
+        return [row["username"] for row in rows]
+
     def _row_to_user(self, row):
         """Helper to convert a DB row to a User object safely."""
         # row[0]=id, row[1]=username, row[2]=password_hash
