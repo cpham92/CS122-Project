@@ -15,7 +15,7 @@ class Task:
         
         # Ensure date_created is a datetime object
         if isinstance(date_created, str):
-             #parsing if it comes in as string
+             #parsing if string
              try:
                  self._date_created = datetime.datetime.fromisoformat(date_created)
              except ValueError:

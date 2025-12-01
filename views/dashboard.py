@@ -5,7 +5,7 @@ from datetime import datetime
 from views.task_window import TaskWindow
 from views.goals_list import GoalsListWindow
 from views.settings import SettingsWindow
-# from views.report_window import ReportWindow       # future implementation
+from views.report_window import ReportWindow  
 
 
 class DashboardWindow:
@@ -294,8 +294,7 @@ class DashboardWindow:
         self.refresh_tasks()
 
     def view_reports(self):
-        # Future report window
-        messagebox.showinfo("Coming Soon", "Reports not implemented yet.")
+        ReportWindow(self.top, self.history_manager, self.user.user_id)
 
     def open_settings(self):
         SettingsWindow(

@@ -30,33 +30,3 @@ class History:
         return self._date_completed
 
 
-class Report(ABC):  # <---  INHERIT FROM ABC, Abstract report class for inheritance
-
-    """
-    Abstract base class for generating reports from history data.
-    """
-    def __init__(self, history_data):
-        #list of History objects to analyze.
-        
-        self._history_data = history_data
-
-    @abstractmethod
-    def generate_report(self):
-        """
-        subclasses must implement this
-        """
-        pass
-
-
-class TaskCompletionReport(Report):
-    def generate_report(self):
-        print(f"Generating Task Completion Report for {len(self._history_data)} items...")
-        # Example logic: Simply count them for now
-        return len(self._history_data)
-
-
-class UserCompletionReport(Report):
-    def generate_report(self):
-        print("Generating User Completion Report...")
-        # Placeholder logic
-        pass
