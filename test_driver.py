@@ -4,14 +4,12 @@ from controllers.goal_manager import GoalManager
 from controllers.task_manager import TaskManager
 from controllers.history_manager import HistoryManager
 
-# --- UPDATE IMPORTS TO THE NEW CLASSES ---
 from models.reports import TaskStatusReport, PriorityReport, CategoryReport
 from datetime import datetime
 
 def run_test():
     print("--- STARTING SYSTEM TEST (With New Graphs) ---")
 
-    # 1. Initialize
     db = Database()
     user_mgr = UserManager(db)
     goal_mgr = GoalManager(db)
@@ -19,9 +17,9 @@ def run_test():
     history_mgr = HistoryManager(db)
     print(f"[OK] Database connected.")
 
-    # 2. Setup User
+    #Setup User
     try:
-        user = user_mgr.create_user("graph_user_02", "pass123")
+        user = user_mgr.create_user("graph_user_03", "pass123")
         if isinstance(user, int): user = user_mgr.get_user_by_id(user)
     except:
         user = user_mgr.get_user_by_username("graph_user_02")

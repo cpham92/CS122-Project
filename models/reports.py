@@ -3,7 +3,7 @@ from collections import Counter
 
 class Report(ABC):
     def __init__(self, data):
-        self._data = data # This will be the list of TASK objects
+        self._data = data # list of TASK objects
 
     @abstractmethod
     def generate_text(self):
@@ -13,8 +13,6 @@ class Report(ABC):
     def get_chart_data(self):
         pass
 
-# --- REPORT 1: Status (Completed vs Pending) ---
-# This is the one you liked earlier
 class TaskStatusReport(Report):
     def generate_text(self):
         total = len(self._data)
@@ -27,8 +25,6 @@ class TaskStatusReport(Report):
         pending = len(self._data) - completed
         return {"Completed": completed, "Pending": pending}
 
-# --- REPORT 2: Priority (High vs Med vs Low) ---
-# This replaces the weird single bar with a 3-bar comparison
 class PriorityReport(Report):
     def generate_text(self):
         # Count priorities
@@ -44,7 +40,6 @@ class PriorityReport(Report):
         priorities = [t.priority for t in self._data]
         return dict(Counter(priorities))
 
-# --- REPORT 3: Category (Work vs School vs etc) ---
 class CategoryReport(Report):
     def generate_text(self):
         # Handle cases where category is None or empty
