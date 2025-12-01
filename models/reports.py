@@ -37,3 +37,32 @@ class UserCompletionReport(Report):
         counts = Counter(user_ids)
         # Convert keys to strings for graph
         return {f"User {k}": v for k, v in counts.items()}
+
+        # ... existing imports ...
+
+class TaskStatusReport(Report):
+    """
+    Analyzes ALL tasks (active and finished) to show progress.
+    Expects a list of TASK objects, not History objects.
+    """
+    def generate_text(self):
+        total = len(self._history_data) # We reuse the variable name, but this will hold Tasks
+        completed = sum(1 for t in self._history_data if t.completed)
+        pending = total - completed
+        
+        return (
+            f"=== PROJECT STATUS ===\n"
+            f"Total Tasks: {total}\n"
+            f"Completed:   {completed}\n"
+            f"Pending:     {pending}\n"
+        )
+
+    def get_chart_data(self):
+        completed = sum(1 for t in self._history_data if t.completed)
+        pending = len(self._history_data) - completed
+        
+        # Returns data for a Bar Chart comparison
+        return {
+            "Completed": completed,
+            "Pending": pending
+        }

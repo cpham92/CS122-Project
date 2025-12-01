@@ -294,7 +294,7 @@ class DashboardWindow:
         self.refresh_tasks()
 
     def view_reports(self):
-        ReportWindow(self.top, self.history_manager, self.user.user_id)
+        ReportWindow(self.top, self.history_manager, self.task_manager, self.user.user_id)
 
     def open_settings(self):
         SettingsWindow(
