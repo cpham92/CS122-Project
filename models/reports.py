@@ -2,67 +2,60 @@ from abc import ABC, abstractmethod
 from collections import Counter
 
 class Report(ABC):
-    def __init__(self, history_data):
-        self._history_data = history_data
+    def __init__(self, data):
+        self._data = data # This will be the list of TASK objects
 
     @abstractmethod
     def generate_text(self):
-        """Returns a string summary (for the text box)."""
         pass
 
     @abstractmethod
     def get_chart_data(self):
-        """Returns a dictionary {label: value} (for the Matplotlib graph)."""
         pass
 
-class TaskCompletionReport(Report):
+# --- REPORT 1: Status (Completed vs Pending) ---
+# This is the one you liked earlier
+class TaskStatusReport(Report):
     def generate_text(self):
-        return f"Total Tasks Completed: {len(self._history_data)}"
+        total = len(self._data)
+        completed = sum(1 for t in self._data if t.completed)
+        pending = total - completed
+        return f"Total: {total}\nCompleted: {completed}\nPending: {pending}"
 
     def get_chart_data(self):
-        # Graph: Label "Total", Value = count
-        return {"Total": len(self._history_data)}
+        completed = sum(1 for t in self._data if t.completed)
+        pending = len(self._data) - completed
+        return {"Completed": completed, "Pending": pending}
 
-class UserCompletionReport(Report):
+# --- REPORT 2: Priority (High vs Med vs Low) ---
+# This replaces the weird single bar with a 3-bar comparison
+class PriorityReport(Report):
     def generate_text(self):
-        user_ids = [h.user_id for h in self._history_data]
-        counts = Counter(user_ids)
-        text = "User Breakdown:\n"
-        for uid, count in counts.items():
-            text += f"User {uid}: {count} tasks\n"
+        # Count priorities
+        priorities = [t.priority for t in self._data]
+        counts = Counter(priorities)
+        
+        text = "=== BY PRIORITY ===\n"
+        for p, count in counts.items():
+            text += f"{p}: {count}\n"
         return text
 
     def get_chart_data(self):
-        user_ids = [h.user_id for h in self._history_data]
-        counts = Counter(user_ids)
-        # Convert keys to strings for graph
-        return {f"User {k}": v for k, v in counts.items()}
+        priorities = [t.priority for t in self._data]
+        return dict(Counter(priorities))
 
-        # ... existing imports ...
-
-class TaskStatusReport(Report):
-    """
-    Analyzes ALL tasks (active and finished) to show progress.
-    Expects a list of TASK objects, not History objects.
-    """
+# --- REPORT 3: Category (Work vs School vs etc) ---
+class CategoryReport(Report):
     def generate_text(self):
-        total = len(self._history_data) # We reuse the variable name, but this will hold Tasks
-        completed = sum(1 for t in self._history_data if t.completed)
-        pending = total - completed
+        # Handle cases where category is None or empty
+        categories = [t.category if t.category else "None" for t in self._data]
+        counts = Counter(categories)
         
-        return (
-            f"=== PROJECT STATUS ===\n"
-            f"Total Tasks: {total}\n"
-            f"Completed:   {completed}\n"
-            f"Pending:     {pending}\n"
-        )
+        text = "=== BY CATEGORY ===\n"
+        for c, count in counts.items():
+            text += f"{c}: {count}\n"
+        return text
 
     def get_chart_data(self):
-        completed = sum(1 for t in self._history_data if t.completed)
-        pending = len(self._history_data) - completed
-        
-        # Returns data for a Bar Chart comparison
-        return {
-            "Completed": completed,
-            "Pending": pending
-        }
+        categories = [t.category if t.category else "None" for t in self._data]
+        return dict(Counter(categories))

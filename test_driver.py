@@ -3,11 +3,13 @@ from controllers.user_manager import UserManager
 from controllers.goal_manager import GoalManager
 from controllers.task_manager import TaskManager
 from controllers.history_manager import HistoryManager
-from models.reports import TaskCompletionReport, UserCompletionReport
+
+# --- UPDATE IMPORTS TO THE NEW CLASSES ---
+from models.reports import TaskStatusReport, PriorityReport, CategoryReport
 from datetime import datetime
 
 def run_test():
-    print("--- STARTING SYSTEM TEST (With Chart Data) ---")
+    print("--- STARTING SYSTEM TEST (With New Graphs) ---")
 
     # 1. Initialize
     db = Database()
@@ -17,57 +19,63 @@ def run_test():
     history_mgr = HistoryManager(db)
     print(f"[OK] Database connected.")
 
-    # 2. Setup Data (User -> Goal -> Task)
-    # We wrap this in try/except to handle duplicates if you run this multiple times
+    # 2. Setup User
     try:
-        user = user_mgr.create_user("chart_user_01", "pass123")
+        user = user_mgr.create_user("graph_user_02", "pass123")
         if isinstance(user, int): user = user_mgr.get_user_by_id(user)
     except:
-        user = user_mgr.get_user_by_username("chart_user_01")
+        user = user_mgr.get_user_by_username("graph_user_02")
     
     print(f"[OK] User: {user.username} (ID: {user.user_id})")
 
     goal_id = goal_mgr.create_goal(user.user_id, "Visuals", "Test graphs")
     
-    # 3. Create and Complete Multiple Tasks (to make the graph interesting)
-    print("\n--- Creating & Completing Tasks ---")
-    for i in range(3):
-        task_id = task_mgr.create_task(
-            user.user_id, goal_id, f"Task {i}", "Desc", 
-            datetime(2025, 12, 31), "High", "Dev", datetime.now()
-        )
-        # Mark complete
-        task_mgr.mark_task_complete(task_id, datetime.now())
-        # Log to history
-        history_mgr.log_task(user.user_id, task_id, datetime.now())
-        print(f"[OK] Task {i} completed and logged.")
+    # 3. Create Tasks with different Priorities/Categories
+    print("\n--- Creating Varied Tasks ---")
+    
+    # Task 1: High Priority, Dev Category, Completed
+    t1_id = task_mgr.create_task(user.user_id, goal_id, "Code Graph", "Desc", datetime(2025,12,31), "High", "Dev", datetime.now())
+    task_mgr.mark_task_complete(t1_id, datetime.now())
+    
+    # Task 2: Medium Priority, Dev Category, Pending
+    task_mgr.create_task(user.user_id, goal_id, "Write Tests", "Desc", datetime(2025,12,31), "Medium", "Dev", datetime.now())
+    
+    # Task 3: Low Priority, School Category, Pending
+    task_mgr.create_task(user.user_id, goal_id, "Study Math", "Desc", datetime(2025,12,31), "Low", "School", datetime.now())
+    
+    print("[OK] Created 3 tasks (1 Done, 2 Pending).")
 
-    # 4. TEST POLYMORPHISM & CHARTS
-    print("\n--- Testing Report Polymorphism ---")
+    # 4. TEST NEW REPORTS
+    print("\n--- Testing New Graphic Reports ---")
     
-    # Fetch Data
-    history_data = history_mgr.get_history_for_user(user.user_id)
+    # IMPORTANT: The new reports analyze TASKS, not History.
+    # So we fetch the task list.
+    all_tasks = task_mgr.get_tasks_for_user(user.user_id)
     
-    # Create the polymorphic list
+    # Create the polymorphic list with the NEW classes
     reports = [
-        TaskCompletionReport(history_data),
-        UserCompletionReport(history_data)
+        TaskStatusReport(all_tasks),
+        PriorityReport(all_tasks),
+        CategoryReport(all_tasks)
     ]
 
-    for i, report in enumerate(reports):
-        print(f"\nReport #{i+1} ({type(report).__name__}):")
+    for report in reports:
+        # Get the class name
+        name = type(report).__name__
+        print(f"\nReport Type: {name}")
         
-        # Test 1: Text Output (Old requirement)
-        print("  [Text View]:", report.generate_text().replace('\n', ' '))
+        # Test Text Output
+        print("  [Text Summary]:")
+        print(report.generate_text().replace('\n', ' | '))
         
-        # Test 2: Chart Data (New requirement)
+        # Test Chart Data
         data = report.get_chart_data()
         print(f"  [Graph Data]: {data}")
         
-        if isinstance(data, dict) and len(data) > 0:
-            print("  -> PASSED: Ready for Matplotlib")
+        if len(data) > 0:
+            print("  -> PASSED")
         else:
-            print("  -> FAILED: No data for graph")
+            print("  -> FAILED (No data)")
 
 if __name__ == "__main__":
     run_test()

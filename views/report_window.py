@@ -33,11 +33,10 @@ class ReportWindow(tk.Toplevel):
         
         self.report_type = tk.StringVar()
         self.combo = ttk.Combobox(control_frame, textvariable=self.report_type, state="readonly")
-        self.combo['values'] = ("Task Completion", "User Breakdown", "Status Breakdown")
+        
+        self.combo['values'] = ("Status Breakdown", "Priority Distribution", "Category Distribution")
         self.combo.current(0)
         self.combo.pack(side='left', padx=5)
-        
-   
         self.combo.bind("<<ComboboxSelected>>", self.refresh_report)
         
 
@@ -59,32 +58,32 @@ class ReportWindow(tk.Toplevel):
     def refresh_report(self, event):
         """
         The Master Controller for the window.
-        It uses POLYMORPHISM to handle different report types identically.
+        It uses polymorphism to handle different report types identically.
         """
         #Clear previous graph widgets to prevent overlapping
         for widget in self.graph_frame.winfo_children():
             widget.destroy()
 
-       
+        from models.reports import TaskStatusReport, PriorityReport, CategoryReport
+
         selection = self.combo.get()
         report_engine = None
 
-        if selection == "Task Completion":
-            report_engine = TaskCompletionReport(self.history_data)
-        elif selection == "User Breakdown":
-            report_engine = UserCompletionReport(self.history_data)
-        elif selection == "Status Breakdown":
+        if selection == "Status Breakdown":
             report_engine = TaskStatusReport(self.task_data)
+        elif selection == "Priority Distribution":
+            report_engine = PriorityReport(self.task_data)
+        elif selection == "Category Distribution":
+            report_engine = CategoryReport(self.task_data)
 
         if not report_engine:
             return
 
-        
+        #Generate & Draw
         text_summary = report_engine.generate_text()
         self.text_area.delete("1.0", tk.END)
         self.text_area.insert("1.0", text_summary)
 
-    
         chart_data = report_engine.get_chart_data()
         self._draw_graph(chart_data, title=selection)
 
