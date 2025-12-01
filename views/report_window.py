@@ -8,7 +8,7 @@ from models.reports import TaskStatusReport
 from models.reports import TaskCompletionReport, UserCompletionReport
 
 class ReportWindow(tk.Toplevel):
-    def __init__(self, parent, history_manager, user_id, task_manager):
+    def __init__(self, parent, history_manager, task_manager, user_id,):
         super().__init__(parent)
         self.title("Productivity Analytics")
         self.geometry("800x600")
