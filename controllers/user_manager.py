@@ -70,6 +70,16 @@ class UserManager:
             return user
         return None
 
+    def update_username(self, user_id, new_username):
+        cursor = self.conn.cursor()
+        cursor.execute("UPDATE users SET username = ? WHERE user_id = ?", (new_username, user_id))
+        self.conn.commit()
+
+    def update_password(self, user_id, new_password_hash):
+        cursor = self.conn.cursor()
+        cursor.execute("UPDATE users SET password = ? WHERE user_id = ?", (new_password_hash, user_id))
+        self.conn.commit()
+
     def delete_user(self, user_id):
         cursor = self.conn.cursor()
 

@@ -64,12 +64,7 @@ class GoalWindow:
         self.tree.column("deadline", width=120, anchor="center")
         self.tree.column("priority", width=90, anchor="center")
 
-        # --- Colors for color coding tasks ---
-        self.tree.tag_configure("high", background="#ffcc80")       # orange
-        self.tree.tag_configure("medium", background="#fff6b3")     # yellow
-        self.tree.tag_configure("low", background="#c8f7c5")        # green
-        self.tree.tag_configure("completed", background="#d3d3d3")  # gray
-        self.tree.tag_configure("overdue", background="#ff9999")  # red
+        self.apply_color_theme(self.user.color_settings)
 
         # Detect selection to enable Remove Task button
         self.tree.bind("<<TreeviewSelect>>", self.handle_task_select)
@@ -153,6 +148,13 @@ class GoalWindow:
             self.tree.insert("", "end", iid=str(task.task_id), values=values, tags=(tag,))
 
         self.update_progress(completed_count, len(goal_tasks))
+
+    def apply_color_theme(self, colors):
+        self.tree.tag_configure("high", background=colors["high"])
+        self.tree.tag_configure("medium", background=colors["medium"])
+        self.tree.tag_configure("low", background=colors["low"])
+        self.tree.tag_configure("completed", background=colors["completed"])
+        self.tree.tag_configure("overdue", background=colors["overdue"])
 
     def handle_task_select(self, event):
         """

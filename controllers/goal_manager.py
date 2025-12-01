@@ -53,3 +53,8 @@ class GoalManager:
         cursor = self.conn.cursor()
         cursor.execute("DELETE FROM goals WHERE goal_id = ?", (goal_id,))
         self.conn.commit()
+
+    def delete_all_goals_for_user(self, user_id):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM goals WHERE user_id = ?", (user_id,))
+        self.conn.commit()

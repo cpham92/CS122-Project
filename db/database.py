@@ -13,6 +13,7 @@ class Database:
     def create_tables(self):
         cursor = self.conn.cursor()
 
+        # --- USER TABLE ---
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,6 +22,7 @@ class Database:
             )
         ''')
 
+        # --- GOAL TABLE ---
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS goals (
                 goal_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,6 +35,7 @@ class Database:
             )
         ''')
 
+        # --- TASK TABLE ---
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS tasks (
                 task_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,6 +58,7 @@ class Database:
             )
         ''')
 
+        # --- HISTORY TABLE ---
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS history (
                 history_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,6 +74,20 @@ class Database:
             )
         ''')
 
+        # --- SETTINGS TABLE ---
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS settings (
+                user_id INTEGER PRIMARY KEY,
+                high_color TEXT DEFAULT '#ffcc80',
+                medium_color TEXT DEFAULT '#fff6b3',
+                low_color TEXT DEFAULT '#c8f7c5',
+                completed_color TEXT DEFAULT '#d3d3d3',
+                overdue_color TEXT DEFAULT '#ff9999',
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE  
+            )
+        ''')
         self.conn.commit()
 
     def get_connection(self):

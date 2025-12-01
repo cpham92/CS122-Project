@@ -4,7 +4,7 @@ from datetime import datetime
 
 from views.task_window import TaskWindow
 from views.goals_list import GoalsListWindow
-# from views.settings_window import SettingsWindow   # future implementation
+from views.settings import SettingsWindow
 # from views.report_window import ReportWindow       # future implementation
 
 
@@ -12,13 +12,14 @@ class DashboardWindow:
     """
     Main window of the app where users can view and manage all of their tasks
     """
-    def __init__(self, root, user, user_manager, task_manager, goal_manager, history_manager):
+    def __init__(self, root, user, user_manager, task_manager, goal_manager, history_manager, settings_manager):
         self.root = root
         self.user = user
         self.user_manager = user_manager
         self.task_manager = task_manager
         self.goal_manager = goal_manager
         self.history_manager = history_manager
+        self.settings_manager = settings_manager
 
         self.top = tk.Toplevel(root)
         self.top.title("Dashboard")
@@ -30,7 +31,8 @@ class DashboardWindow:
 
         # Displays current user
         tk.Label(header, text="User:", font=("Arial", 14, "bold")).grid(row=0, column=0, sticky="w")
-        tk.Label(header, text=user.username, font=("Arial", 14)).grid(row=0, column=1, sticky="w", padx=5)
+        self.username_label = tk.Label(header, text=user.username, font=("Arial", 14))
+        self.username_label.grid(row=0, column=1, sticky="w", padx=5)
 
         settings_btn = tk.Button(header, text="Settings", width=10, command=self.open_settings)
         settings_btn.grid(row=0, column=2, padx=20)
@@ -119,12 +121,7 @@ class DashboardWindow:
         self.tree.column("priority", width=100, anchor="center")
         self.tree.column("goal", width=120, anchor="center")
 
-        # --- Colors for color-coding tasks ---
-        self.tree.tag_configure("high", background="#ffcc80")       # orange
-        self.tree.tag_configure("medium", background="#fff6b3")     # yellow
-        self.tree.tag_configure("low", background="#c8f7c5")        # green
-        self.tree.tag_configure("completed", background="#d3d3d3")  # gray
-        self.tree.tag_configure("overdue", background="#ff9999")    # red
+        self.apply_color_theme(self.user.color_settings)
 
         # Detect selection to enable Edit Task button
         self.tree.bind("<<TreeviewSelect>>", self.handle_task_select)
@@ -257,6 +254,17 @@ class DashboardWindow:
         else:
             self.edit_task_btn.config(state="disabled")
 
+    def apply_color_theme(self, colors):
+        self.tree.tag_configure("high", background=colors["high"])
+        self.tree.tag_configure("medium", background=colors["medium"])
+        self.tree.tag_configure("low", background=colors["low"])
+        self.tree.tag_configure("completed", background=colors["completed"])
+        self.tree.tag_configure("overdue", background=colors["overdue"])
+
+    def update_username_display(self, new_name):
+        self.user.username = new_name
+        self.username_label.config(text=new_name)
+
     # --- Button commands ---
     def open_new_task(self):
         window = TaskWindow(self.root, self.user, self.task_manager, self.goal_manager,
@@ -290,8 +298,12 @@ class DashboardWindow:
         messagebox.showinfo("Coming Soon", "Reports not implemented yet.")
 
     def open_settings(self):
-        # Future settings window
-        messagebox.showinfo("Coming Soon", "Settings window not implemented yet.")
+        SettingsWindow(
+            self.root, self.user, self.user_manager,
+            self.settings_manager, self.task_manager,
+            self.goal_manager, self.history_manager,
+            dashboard=self
+        )
 
     def logout(self):
         self.top.destroy()

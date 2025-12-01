@@ -44,3 +44,8 @@ class HistoryManager:
 
         cursor.execute("DELETE FROM history WHERE task_id = ?", (task_id,))
         self.conn.commit()
+
+    def delete_all_history_for_user(self, user_id):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM history WHERE user_id = ?", (user_id,))
+        self.conn.commit()

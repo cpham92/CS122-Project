@@ -60,7 +60,7 @@ class Task:
 
     @description.setter
     def description(self, value):
-        if not isinstance(value, str):
+        if value is not None and not isinstance(value, str):
             raise TypeError("description must be a string")
         self._description = value
 

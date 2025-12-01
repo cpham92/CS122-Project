@@ -7,12 +7,13 @@ class LoginWindow:
     """
     Window that shows upon app startup; users can log in to existing profile or create new profile
     """
-    def __init__(self, root, user_manager, task_manager, goal_manager, history_manager):
+    def __init__(self, root, user_manager, task_manager, goal_manager, history_manager, settings_manager):
         self.root = root
         self.user_manager = user_manager
         self.task_manager = task_manager
         self.goal_manager = goal_manager
         self.history_manager = history_manager
+        self.settings_manager = settings_manager
 
         self.root.login_window_instance = self
 
@@ -69,6 +70,8 @@ class LoginWindow:
             messagebox.showerror("Login Failed", "Incorrect password.")
             return
 
+        user.color_settings = self.settings_manager.get_settings(user.user_id)
+
         messagebox.showinfo("Success", f"Welcome back, {username}!")
         self.open_dashboard_window(user)
 
@@ -84,7 +87,7 @@ class LoginWindow:
 
     def open_dashboard_window(self, user):
         self.root.withdraw()
-        DashboardWindow(self.root, user, self.user_manager, self.task_manager, self.goal_manager, self.history_manager)
+        DashboardWindow(self.root, user, self.user_manager, self.task_manager, self.goal_manager, self.history_manager, self.settings_manager)
 
     def open_new_profile_window(self):
         self.root.withdraw()

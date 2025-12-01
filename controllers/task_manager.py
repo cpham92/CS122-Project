@@ -100,6 +100,11 @@ class TaskManager:
         cursor.execute("DELETE FROM tasks WHERE task_id = ?", (task_id,))
         self.conn.commit()
 
+    def delete_all_tasks_for_user(self, user_id):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM tasks WHERE user_id = ?", (user_id,))
+        self.conn.commit()
+
     def mark_task_complete(self, task_id, date_completed):
         cursor = self.conn.cursor()
         cursor.execute("""
