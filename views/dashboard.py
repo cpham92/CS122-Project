@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 from datetime import datetime
 
 from views.task_window import TaskWindow
@@ -23,22 +23,29 @@ class DashboardWindow:
 
         self.top = tk.Toplevel(root)
         self.top.title("Dashboard")
-        self.top.geometry("850x600")
+        self.top.geometry("950x600")
 
         # --- Header (user/settings/logout) ---
         header = tk.Frame(self.top)
         header.pack(fill="x", pady=10, padx=20)
 
-        # Displays current user
-        tk.Label(header, text="User:", font=("Arial", 14, "bold")).grid(row=0, column=0, sticky="w")
-        self.username_label = tk.Label(header, text=user.username, font=("Arial", 14))
-        self.username_label.grid(row=0, column=1, sticky="w", padx=5)
+        # Left side (User label)
+        left_header = tk.Frame(header)
+        left_header.pack(side="left", anchor="w")
 
-        settings_btn = tk.Button(header, text="Settings", width=10, command=self.open_settings)
-        settings_btn.grid(row=0, column=2, padx=20)
+        tk.Label(left_header, text="User:", font=("Arial", 14, "bold")).pack(side="left")
+        self.username_label = tk.Label(left_header, text=user.username, font=("Arial", 14))
+        self.username_label.pack(side="left", padx=5)
 
-        logout_btn = tk.Button(header, text="Logout", width=10, command=self.logout)
-        logout_btn.grid(row=0, column=3)
+        # Right side (Settings + Logout)
+        right_header = tk.Frame(header)
+        right_header.pack(side="right", anchor="e")
+
+        settings_btn = tk.Button(right_header, text="Settings", width=10, command=self.open_settings)
+        settings_btn.pack(side="left", padx=10)
+
+        logout_btn = tk.Button(right_header, text="Logout", width=10, command=self.logout)
+        logout_btn.pack(side="left")
 
         ttk.Separator(self.top, orient="horizontal").pack(fill="x", padx=15, pady=5)
 
@@ -46,36 +53,52 @@ class DashboardWindow:
         fs_frame = tk.Frame(self.top)
         fs_frame.pack(fill="x", padx=20, pady=10)
 
-        tk.Label(fs_frame, text="Filters:", font=("Arial", 14, "bold")).grid(row=0, column=0, sticky="w")
+        # Configure columns so spacing is even
+        for i in range(4):
+            fs_frame.grid_columnconfigure(i, weight=1)
 
-        # Priority Filter
-        tk.Label(fs_frame, text="Priority").grid(row=0, column=1)
+        # Filters label
+        tk.Label(fs_frame, text="Filters:", font=("Arial", 14, "bold")).grid(
+            row=0, column=0, sticky="w"
+        )
+
+        # --- Priority Filter ---
+        priority_frame = tk.Frame(fs_frame)
+        priority_frame.grid(row=0, column=1, padx=10, sticky="w")
+
+        tk.Label(priority_frame, text="Priority").pack(side="left", padx=(0, 5))
         self.filter_priority_var = tk.StringVar()
         self.priority_filter = ttk.Combobox(
-            fs_frame, textvariable=self.filter_priority_var,
+            priority_frame, textvariable=self.filter_priority_var,
             values=["", "High", "Medium", "Low"], state="readonly", width=12
         )
-        self.priority_filter.grid(row=0, column=2, padx=0)
+        self.priority_filter.pack(side="left")
         self.priority_filter.bind("<<ComboboxSelected>>", lambda e: self.refresh_tasks())
 
-        # Category Filter
-        tk.Label(fs_frame, text="Category").grid(row=0, column=3)
+        # --- Category Filter ---
+        category_frame = tk.Frame(fs_frame)
+        category_frame.grid(row=0, column=2, padx=10, sticky="w")
+
+        tk.Label(category_frame, text="Category").pack(side="left", padx=(0, 5))
         self.filter_category_var = tk.StringVar()
         self.category_filter = ttk.Combobox(
-            fs_frame, textvariable=self.filter_category_var,
+            category_frame, textvariable=self.filter_category_var,
             values=self.get_category_list(), state="readonly", width=12
         )
-        self.category_filter.grid(row=0, column=4, padx=0)
+        self.category_filter.pack(side="left")
         self.category_filter.bind("<<ComboboxSelected>>", lambda e: self.refresh_tasks())
 
-        # Status Filter
-        tk.Label(fs_frame, text="Status").grid(row=0, column=5)
+        # --- Status Filter ---
+        status_frame = tk.Frame(fs_frame)
+        status_frame.grid(row=0, column=3, padx=10, sticky="w")
+
+        tk.Label(status_frame, text="Status").pack(side="left", padx=(0, 5))
         self.filter_status_var = tk.StringVar()
         self.status_filter = ttk.Combobox(
-            fs_frame, textvariable=self.filter_status_var,
+            status_frame, textvariable=self.filter_status_var,
             values=["", "Completed", "Uncompleted"], state="readonly", width=12
         )
-        self.status_filter.grid(row=0, column=6, padx=0)
+        self.status_filter.pack(side="left")
         self.status_filter.bind("<<ComboboxSelected>>", lambda e: self.refresh_tasks())
 
         tk.Label(fs_frame, text="Sort By:", font=("Arial", 14, "bold")).grid(row=1, column=0, sticky="w", pady=(10, 0))

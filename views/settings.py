@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog, colorchooser
+from tkinter import messagebox, simpledialog, colorchooser
 
 class SettingsWindow:
     def __init__(self, root, user, user_manager, settings_manager,

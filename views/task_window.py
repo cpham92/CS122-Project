@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
-from tkcalendar import DateEntry
 from datetime import datetime
 
 class TaskWindow:
